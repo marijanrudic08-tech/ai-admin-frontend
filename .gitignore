@@ -1,0 +1,43 @@
+# ======================================
+# Node.js (backend + frontend zajednicki)
+# ======================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+package-lock.json
+yarn.lock
+.pnpm-debug.log
+
+# ======================================
+# Next.js (frontend)
+# ======================================
+.next/
+out/
+.next/cache/
+
+# Vercel
+.vercel/
+
+# Lokalno okruženje
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ======================================
+# Build i dist fajlovi
+# ======================================
+dist/
+build/
+
+# ======================================
+# Editor / OS specific
+# ======================================
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
