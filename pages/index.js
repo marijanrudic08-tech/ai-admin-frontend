@@ -1,90 +1,98 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
-export default function Chat() {
+export default function Home() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Učitavanje povijesti iz localStorage
-  useEffect(() => {
-    const savedMessages = localStorage.getItem("chatMessages");
-    if (savedMessages) {
-      setMessages(JSON.parse(savedMessages));
-    }
-  }, []);
-
-  // Spremanje u localStorage
-  useEffect(() => {
-    localStorage.setItem("chatMessages", JSON.stringify(messages));
-  }, [messages]);
-
   const sendMessage = async () => {
     if (!input.trim()) return;
 
-    const newMessage = { role: "user", content: input };
-    setMessages([...messages, newMessage]);
+    const userMessage = { role: "user", content: input };
+    setMessages([...messages, userMessage]);
     setInput("");
     setLoading(true);
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/chat`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: input }),
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/chat`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: input }),
+        }
+      );
 
       const data = await res.json();
-      const aiMessage = { role: "assistant", content: data.text };
+      const botMessage = { role: "assistant", content: data.reply };
 
-      setMessages((prev) => [...prev, aiMessage]);
-    } catch (err) {
-      console.error("Greška:", err);
+      setMessages((prev) => [...prev, botMessage]);
+    } catch (error) {
+      console.error("Greška:", error);
+      const errorMessage = {
+        role: "assistant",
+        content: "⚠️ Došlo je do greške. Provjeri backend.",
+      };
+      setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setLoading(false);
     }
   };
 
-  // 🔴 Funkcija za brisanje chata
   const clearChat = () => {
     setMessages([]);
-    localStorage.removeItem("chatMessages");
   };
 
   return (
-    <div className="flex flex-col h-screen p-4">
-      <div className="flex-1 overflow-y-auto border rounded p-3 mb-3 bg-gray-50">
-        {messages.map((msg, i) => (
+    <div style={{ maxWidth: "600px", margin: "50px auto", fontFamily: "Arial" }}>
+      <h1>AI Admin Chat</h1>
+      <div
+        style={{
+          border: "1px solid #ddd",
+          borderRadius: "8px",
+          padding: "10px",
+          height: "400px",
+          overflowY: "auto",
+          marginBottom: "10px",
+          backgroundColor: "#fafafa",
+        }}
+      >
+        {messages.map((msg, index) => (
           <div
-            key={i}
-            className={`p-2 my-1 rounded ${
-              msg.role === "user" ? "bg-blue-100 text-right" : "bg-green-100 text-left"
-            }`}
+            key={index}
+            style={{
+              margin: "8px 0",
+              textAlign: msg.role === "user" ? "right" : "left",
+            }}
           >
-            {msg.content}
+            <span
+              style={{
+                display: "inline-block",
+                padding: "8px 12px",
+                borderRadius: "12px",
+                background: msg.role === "user" ? "#0070f3" : "#eaeaea",
+                color: msg.role === "user" ? "#fff" : "#000",
+              }}
+            >
+              {msg.content}
+            </span>
           </div>
         ))}
-        {loading && <div className="italic text-gray-500">AI piše...</div>}
+        {loading && <p>⏳ Loading...</p>}
       </div>
 
-      <div className="flex gap-2">
+      <div style={{ display: "flex", gap: "8px" }}>
         <input
-          className="flex-1 border p-2 rounded"
+          type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Napiši poruku..."
+          style={{ flex: 1, padding: "8px" }}
         />
-        <button
-          className="bg-blue-500 text-white px-4 py-2 rounded"
-          onClick={sendMessage}
-        >
+        <button onClick={sendMessage} disabled={loading}>
           Pošalji
         </button>
-        <button
-          className="bg-red-500 text-white px-4 py-2 rounded"
-          onClick={clearChat}
-        >
-          Obriši
-        </button>
+        <button onClick={clearChat}>Obriši</button>
       </div>
     </div>
   );
